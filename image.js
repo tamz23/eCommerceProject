@@ -220,7 +220,7 @@ function saveFoundImage(type){
 	var folName = foldName;
 	var selectedImage = imageCollection[CurrentImageCounter];
 	//alert(selectedImage);
-	var saveName = foldName+"$"+$('#extn').val();
+	var saveName = foldName+"\."+$('#extn').val();
 	alert(saveName);
 	var reason=$('#reasonPartImage').val();
 	
