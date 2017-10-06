@@ -81,6 +81,8 @@ public class StudentRestController {
 	
 	private static final ArrayList<Element> folderInfo = null;
 
+	List<HashMap<String, String>> allImageList = new ArrayList<HashMap<String,String>>();
+	
 	@Autowired
 	StudentService student;
 	
@@ -848,10 +850,10 @@ public List<Student> fetchstudenthql() throws ParseException {
 		}
 		
 	
-	@RequestMapping(value="parseSite", method=RequestMethod.GET)
-	public void parseWebsite() throws IOException{
+	@RequestMapping(value="parseSite/{url}", method=RequestMethod.POST)
+	public void parseWebsite(@RequestBody HashMap<String, String> url) throws IOException{
 		
-		 Document doc = Jsoup.connect("https://www.booking.com/hotel/fr/talisman-bed-and-breakfast.en-gb.html?aid=356980;label=gog235jc-hotel-XX-fr-talismanNbedNandNbreakfast-unspec-in-com-L%3Aen-O%3Aabn-B%3Achrome-N%3AXX-S%3Abo-U%3AXX-H%3As;sid=4fe81254d0753e8978b37e61832bc8b8;dist=0&sb_price_type=total&type=total&").get();  
+		 Document doc = Jsoup.connect(url.get("url")).get();  
          String title = doc.title();  
          System.out.println("title is: " + title);
          
@@ -917,8 +919,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 	public void readExcel() throws IOException{
 		
 		
-		
-		 String excelFilePath = "C:/Vithu Dream/booking.com/Image Collection 1000_1.xlsx";
+		 String excelFilePath = "C:/Vithu Dream/booking.com/booking1.xlsx";
 	        FileInputStream inputStream = new FileInputStream(new File(excelFilePath));
 	         
 	        Workbook workbook = new XSSFWorkbook(inputStream);
@@ -1330,6 +1331,8 @@ public List<Student> fetchstudenthql() throws ParseException {
         File[] files = file.listFiles();
         String addressOnFile="";
         
+        allImageList.clear();
+        
         boolean isSubFolderPresent =false;
         for(File f : files){
         	if(f.isDirectory()){
@@ -1356,7 +1359,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 				fNames[i] = files[i].getName();
 
 				HashMap<String,String> foldInfo = new HashMap<String, String>();
-				if (files[i].getName().contains(".txt")) {
+				if (files[i].getName().contains("textfile.txt")) {
 
 					String fileName = files[i].getName();
 					try {
@@ -1365,13 +1368,14 @@ public List<Student> fetchstudenthql() throws ParseException {
 						BufferedReader bufferReader = new BufferedReader(inputFile);
 						String line;
 						
+						int cnt=0;
 						while ((line = bufferReader.readLine()) != null) {
 							System.out.println(line);
-							
-							if(i==0){
+							cnt++;
+							if(cnt==1){
 								addressOnFile = line;
 							}
-							if(i==1){
+							if(cnt==2){
 								foldInfo.put(fileName, line);
 							}
 							
@@ -1383,6 +1387,36 @@ public List<Student> fetchstudenthql() throws ParseException {
 					}
 				}
 				folderInfo.add(foldInfo);
+				
+				if(files[i].getName().contains("ImageURLs.txt")){
+					
+					String fileName = files[i].getName();
+					try {
+
+						FileReader inputFile = new FileReader(path + folderName + "/" + fileName);
+						BufferedReader bufferReader = new BufferedReader(inputFile);
+						String line;
+						
+						while ((line = bufferReader.readLine()) != null) {
+							System.out.println(line);
+							
+							String[] splt = line.split("!");
+							
+							HashMap<String,String> lne = new HashMap<String, String>();
+							
+							lne.put(splt[0], splt[1]);
+							
+							allImageList.add(lne);
+							
+						}
+						
+						bufferReader.close();
+					} catch (Exception e) {
+						System.out.println("Error while reading file line by line:" + e.getMessage());
+					}
+
+					
+				}
 			}
 			info.put("scenario", "singleProd");
 			info.put("fileAddress", addressOnFile);
@@ -1396,7 +1430,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 
 				HashMap<String,String> foldInfo = new HashMap<String, String>();
 				
-				if (files[i].getName().contains(".txt")) {
+				if (files[i].getName().contains("textfile.txt")) {
 
 					String fileName = files[i].getName();
 					try {
@@ -1404,12 +1438,17 @@ public List<Student> fetchstudenthql() throws ParseException {
 						FileReader inputFile = new FileReader(path + folderName + "/" + fileName);
 						BufferedReader bufferReader = new BufferedReader(inputFile);
 						String line;
-						
+						int cnt=0;
 						while ((line = bufferReader.readLine()) != null) {
 							System.out.println(line);
-							addressOnFile = line;
-							foldInfo.put("folderName", "main");
-							foldInfo.put("addressInfo", line);	
+							cnt++;
+							if(cnt ==2){
+								
+								addressOnFile = line;
+								foldInfo.put("folderName", "main");
+								foldInfo.put("addressInfo", line);	
+							}
+							
 						}
 						addr = line;
 						bufferReader.close();
@@ -1420,6 +1459,36 @@ public List<Student> fetchstudenthql() throws ParseException {
 					folderInfo.add(foldInfo);
 				}
 				
+				if (files[i].getName().contains("ImageURLs.txt")) {
+
+					String fileName = files[i].getName();
+					try {
+
+						FileReader inputFile = new FileReader(path + folderName + "/" + fileName);
+						BufferedReader bufferReader = new BufferedReader(inputFile);
+						String line;
+
+						while ((line = bufferReader.readLine()) != null) {
+							System.out.println(line);
+
+							String[] splt = line.split("!");
+
+							HashMap<String, String> lne = new HashMap<String, String>();
+
+							lne.put(splt[0], splt[1]);
+
+							allImageList.add(lne);
+
+						}
+
+						bufferReader.close();
+					} catch (Exception e) {
+						System.out.println("Error while reading file line by line:" + e.getMessage());
+					}
+
+				}
+				
+				
 				if (files[i].isDirectory()) {
 
 					File sfile = new File(path + folderName + "/" + files[i].getName());
@@ -1429,7 +1498,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 					for (int j = 0; j < sfiles.length; j++) {
 					
 						HashMap<String,String> foldInfo1 = new HashMap<String, String>();
-						if (sfiles[j].getName().contains(".txt")) {
+						if (sfiles[j].getName().contains("textfile.txt")) {
 
 							String sfileName = sfiles[j].getName();
 							//try {
@@ -1537,29 +1606,31 @@ public List<Student> fetchstudenthql() throws ParseException {
 									@PathVariable("curImg") String fileNam, @PathVariable("saveImage") String saveImage, 
 									@PathVariable("saveImgCnt") Integer saveImageCount, @PathVariable("reason") String reason	) throws IOException {
 		
-		saveImage = saveImage.replace("$", ".");
+		//saveImage = saveImage.replace("$", ".");
 		
 		System.out.println("C:/Users/tamil/Desktop/vithuSampleProj/src/main/webapp/WEB-INF/img/output/"+foldname+"/"+fileNam);
 		File source = new File("C:/Users/tamil/Desktop/vithuSampleProj/src/main/webapp/WEB-INF/img/output/"+foldname+"/"+fileNam);
-		boolean isRenamed =	source.renameTo(new File("C:/Users/tamil/Desktop/vithuSampleProj/src/main/webapp/WEB-INF/img/output/"+foldname+"/"+ saveImage+".jpg"));
+		
+		/*boolean isRenamed =	source.renameTo(new File("C:/Users/tamil/Desktop/vithuSampleProj/src/main/webapp/WEB-INF/img/output/"+foldname+"/"+ saveImage+".jpg"));
 		System.out.println("saveImage "+ saveImage+".jpg");
 		File sourceNew = null;
 		if(isRenamed){
 			sourceNew = new File("C:/Users/tamil/Desktop/vithuSampleProj/src/main/webapp/WEB-INF/img/output/"+foldname+"/"+ saveImage+".jpg");
-		}
+		}*/
 		
+		//File sourceNew = new File("C:/Users/tamil/Desktop/vithuSampleProj/src/main/webapp/WEB-INF/img/output/"+foldname+);
 		
 		File dest = null;
 		
 		if(type.equals("found")){
-			 dest = new File("C:/Vithu Dream/booking.com/Delivery/Found");
+			 dest = new File("C:/Vithu Dream/booking.com/Delivery/Found"+"/"+ saveImage+".jpg");
 		}
 		else if(type.equals("partFound")){
-			 dest = new File("C:/Vithu Dream/booking.com/Delivery/partFound");
+			 dest = new File("C:/Vithu Dream/booking.com/Delivery/partFound"+"/"+ saveImage+".jpg");
 		}
 		
 		try {
-		    FileUtils.copyFileToDirectory(sourceNew, dest);
+		    FileUtils.copyFile(source, dest); 
 		} catch (IOException e) {
 		    e.printStackTrace();
 		}
@@ -1573,10 +1644,26 @@ public List<Student> fetchstudenthql() throws ParseException {
 
         Row row = sheet.createRow (saveImageCount);
 		row.createCell(0).setCellValue(foldname);
-		row.createCell(1).setCellValue(type);
+		
+		row.createCell(1).setCellValue(saveImage);
+		row.createCell(2).setCellValue(type);
 		if(type.equals("partFound")){	
-			row.createCell(2).setCellValue(reason);
+			row.createCell(3).setCellValue(reason);
 		}
+		
+		String[] fNameSplit =	fileNam.split("_");
+		String[] fNameSplt = fNameSplit[1].split("\\."); 
+		String selectedImageURL ="";
+		for(HashMap<String,String> x: allImageList){
+			
+			if(x.get(fNameSplt[0]) != null){
+				selectedImageURL = x.get(fNameSplt[0]);
+			}
+			
+			
+		}
+		
+		row.createCell(3).setCellValue(selectedImageURL);
 		
 		
 		FileOutputStream fileOut = new FileOutputStream(excelFilePath);
@@ -1696,7 +1783,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 	        Sheet firstSheet = workbook.getSheetAt(0);
 	        Iterator<Row> iterator = firstSheet.iterator();
 	        int rowNum = 1, folderCounter=0; 
-	        String itemId = ""; String address="",city="",zip="" ;
+	        String itemId = ""; String address="",city="",zip="", url="" ; 
 	        while (iterator.hasNext()) {
 	        	
 	        	
@@ -1713,14 +1800,14 @@ public List<Student> fetchstudenthql() throws ParseException {
 	            	case Cell.CELL_TYPE_STRING:
 
 	            		itemId = cell.getStringCellValue();
-	            		System.out.println(cell.getStringCellValue());
+	            		//System.out.println(cell.getStringCellValue());
 	            		
                     	break;
                     case Cell.CELL_TYPE_NUMERIC:
                     	
                     	Double a = cell.getNumericCellValue() ;
                     	String[] b = StringUtils.split(String.valueOf(a), ".");
-                    	System.out.println(b[0]);
+                    	//System.out.println(b[0]);
                     	itemId = b[0];
                     	
                         break;
@@ -1748,7 +1835,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 	                    	
 	                    	Double a = cell.getNumericCellValue() ;
 	                    	String[] b = StringUtils.split(String.valueOf(a), ".");
-	                    	System.out.println(b[0]);
+	                    	//System.out.println(b[0]);
 	                    	
 	                    	searchkeyword = (String) ((searchkeyword.equals(""))? ( String.valueOf( b[0])): (searchkeyword+ "+"+  String.valueOf( b[0])));
 	                    	rawAddress = (String) ((searchkeyword.equals(""))? ( String.valueOf( b[0])): (searchkeyword+ " "+  String.valueOf( b[0])));
@@ -1770,7 +1857,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 	    		String userAgent = "Googlebot/2.1 (+http://www.google.com/bot.html)"; // Change this to your company's name and bot homepage!
 	    		
 	    		
-	    		System.out.println("RowNum: "+ ++rowNum + searchkeyword);
+	    		//System.out.println("RowNum: "+ ++rowNum + searchkeyword);
 	    		
 	    		Elements links = null; 
 	    		
@@ -1778,7 +1865,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 	    			 links = Jsoup.connect(google + URLEncoder.encode(search, charset)).userAgent(userAgent)
 	    					 //.followRedirects(true)
 	    					 .get().select(".g>.r>a");	
-	    			 System.out.println(links.size());
+	    			// System.out.println(links.size());
 	 	    		
 	    			 nextRow.createCell(15).setCellValue(searchkeyword);
 	    			 
@@ -1789,7 +1876,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 	    			
 	 	    		for (Element link : links) {
 	 	    		    String title = link.text();
-	 	    		    String url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
+	 	    		    url = link.absUrl("href"); // Google returns URLs in format "http://www.google.com/url?q=<url>&sa=U&ei=<someKey>".
 	 	    		    url = URLDecoder.decode(url.substring(url.indexOf('=') + 1, url.indexOf('&')), "UTF-8");
 
 	 	    		    if (!url.startsWith("http")) {
@@ -1800,13 +1887,25 @@ public List<Student> fetchstudenthql() throws ParseException {
 	 	    		    if(url.contains("booking.com") ){
 	 	    		    	
 	 	    		    	countOfBookingSite++;
-	 	    		    	System.out.println("Title: " + title);
-	 	    			    System.out.println("URL: " + url);
+	 	    		  //  	System.out.println("Title: " + title);
+	 	    			//    System.out.println("URL: " + url);
 	 	    			
 	 	    			   
 	 	    			    
 	 	    			   Document docu = Jsoup.connect(url).maxBodySize(0).get();
-	 	        		   Elements imgLnks = docu.getElementsByTag("img");
+	 	    			   
+	 	    			  Elements imgLnks = docu.getElementsByTag("a");
+	 	    				
+	 	    				/*for(Element x: a){
+	 	    					
+	 	    					if(x.hasClass("hotel_thumbs_sprite")){
+	 	    						System.out.println(x.getElementsByTag("img").get(0).absUrl("src"));
+	 	    					}
+	 	    					
+	 	    				}*/
+	 	    			   
+	 	    			   
+	 	        		   //Elements imgLnks = docu.getElementsByTag("img");
 	 	        		   String hotelAdd="";	 
 	 	        		   try{
 	         				 Elements hotelAddress = 	docu.getElementById("showMap2").getElementsByTag("span");
@@ -1815,27 +1914,27 @@ public List<Student> fetchstudenthql() throws ParseException {
 	         				 for(Element aa :hotelAddress){
 	         					 
 								if (aa.hasClass("hp_address_subtitle")) {
-									System.out.println(aa.text());
+									//System.out.println(aa.text());
 									hotelAdd = aa.text();
 									nextRow.createCell(5).setCellValue(aa.text());
 
-									System.out.println("onSite: "+hotelAdd);
+									/*System.out.println("onSite: "+hotelAdd);
 									
 									System.out.println("addressOnExcel "+address  );
 									System.out.println("cityOnExcel "+city  );
-									System.out.println("zipOnExcel "+ zip  );
+									System.out.println("zipOnExcel "+ zip  );*/
 									
 									if (hotelAdd.contains(address)) {
 										doesAddrMatch = "Y";
-										System.out.println("address matches");
+										//System.out.println("address matches");
 									}
 									if (hotelAdd.contains(zip)) {
 										doesZipMatch = "Y";
-										System.out.println("zip matches");
+										//System.out.println("zip matches");
 									}
 									if (hotelAdd.contains(city)) {
 										doesCitymatch = "Y";
-										System.out.println("city matches");
+										//System.out.println("city matches");
 									}
 
 									boolean alreadyCraweled=false;
@@ -1853,22 +1952,32 @@ public List<Student> fetchstudenthql() throws ParseException {
 									alreadyCraweled = false;
 								}
 								
-								
+									List urlZ  = new ArrayList();
 									if (alreadyCraweled == false && (doesAddrMatch.equals("Y") || (doesZipMatch.equals("Y")))) {
 
-										int k = 1;
+										int k = 1; String actualURl = ""; 
 										for (Element el : imgLnks) {
 
-											if (k > 40) {
-												break;
-											}
+											/*
+											 * if (k > 40) { break; }
+											 */
 
-											if (el.absUrl("src").contains("/images/hotel/")) {
+											if (el.hasClass("hotel_thumbs_sprite")) {
+												// System.out.println(el.getElementsByTag("img").get(0).absUrl("src"));
 
-												String actualURl = el.absUrl("src");
+												if (el.hasAttr("href")) {
+													actualURl = el.absUrl("href");
+												}
 
-												System.out.println(actualURl);
+												else {
+													Elements ele = el.getElementsByTag("img");
+													if ((ele.size() > 0)
+															&& ele.get(0).absUrl("src").contains("/images/hotel/")) {
 
+														actualURl = ele.get(0).absUrl("src");
+
+													}
+												}
 												String a = "/hotel/";
 												String b1[] = actualURl.split(a);
 
@@ -1882,28 +1991,29 @@ public List<Student> fetchstudenthql() throws ParseException {
 													Urls = b1[0] + a + "max1024x768" + "/" + c[1];
 												}
 
-												System.out.println(Urls);
+												urlZ.add(k+"!"+ Urls);
+												
+												// System.out.println(Urls);
 
-												try{
+												try {
 													URL url1 = new URL(Urls);
 													InputStream is = url1.openStream();
-													File f = new File(path + "/" + itemId );
+													File f = new File(path + "/" + itemId);
 													f.mkdirs();
 
 													OutputStream os = null;
 													if (countOfBookingSite == 1) {
-														os = new FileOutputStream(path + "/" + itemId 
-																+ "/"+itemId+"_" + (k) + ".jpg");
+														os = new FileOutputStream(path + "/" + itemId + "/" + itemId
+																+ "_" + (k) + ".jpg");
 													} else {
-														File sf = new File(path + "/" + itemId 
-																+ "/subfolder" + (countOfBookingSite));
+														File sf = new File(path + "/" + itemId + "/subfolder"
+																+ (countOfBookingSite));
 														sf.mkdirs();
-														os = new FileOutputStream(
-																path + "/" + itemId + "/subfolder"
-																		+ (countOfBookingSite) + "/"+ itemId+"_" + (k) + ".jpg");
+														os = new FileOutputStream(path + "/" + itemId + "/subfolder"
+																+ (countOfBookingSite) + "/" + itemId + "_" + (k)
+																+ ".jpg");
 													}
-													
-													
+
 													byte[] b = new byte[2048];
 													int length;
 
@@ -1914,17 +2024,16 @@ public List<Student> fetchstudenthql() throws ParseException {
 													is.close();
 													os.close();
 													k++;
-		
-													
+
+												} catch (Exception ex) {
+													System.out
+															.println("Urls :" + Urls + " " + ex.getLocalizedMessage());
 												}
-												catch(Exception ex){
-													System.out.println("Urls :"+Urls+" "+ ex.getLocalizedMessage());
-												}
-												
-												
-												
+
 											}
+
 										}
+
 
 										nextRow.createCell(5 + countOfBookingSite).setCellValue(url);
 
@@ -1934,22 +2043,42 @@ public List<Student> fetchstudenthql() throws ParseException {
 										
 
 										System.out.println("HotelAddress: " + aa.text());
-										FileWriter fw = null;
+										FileWriter fw = null; FileWriter fw1 = null;
 
 										if (countOfBookingSite == 1) {
 
 											fw = new FileWriter(
 													path + "/" + itemId  + "/textfile.txt");
+											
+											fw1 = new FileWriter(
+													path + "/" + itemId  + "/ImageURLs.txt");
+											
 										} else {
 
 											fw = new FileWriter(path + "/" + itemId  + "/subfolder"
 													+ (countOfBookingSite) + "/textfile.txt");
+											
+											fw1 = new FileWriter(path + "/" + itemId  + "/subfolder"
+													+ (countOfBookingSite) + "/ImageURLs.txt");
 										}
 
+										
+										BufferedWriter bw1 = new BufferedWriter(fw1);
+										for(int l=0;l<urlZ.size();l++ ){
+											bw1.write( urlZ.get(l).toString());
+											bw1.newLine();
+										}
+										bw1.close();
+										fw1.close();
+										
 										BufferedWriter bw = new BufferedWriter(fw);
 										bw.write(address+" "+zip+""+city);
 										bw.newLine();
 										bw.write(aa.text());
+										
+										System.out.println(url);
+										bw.newLine();
+										bw.write(url);
 										bw.close();
 										fw.close();
 
@@ -1961,8 +2090,8 @@ public List<Student> fetchstudenthql() throws ParseException {
 	         					 
 	         				 }
 	         				
-	         				System.out.println("HotelAddress: "+ hotelAdd);
-	 	    	            FileWriter fw = null;
+	         				//System.out.println("HotelAddress: "+ hotelAdd);
+	 	    	            /*FileWriter fw = null;
 	 	    	            
 							if (countOfBookingSite == 1) {
 
@@ -1978,7 +2107,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 							bw.newLine();
 							bw.write(hotelAdd);
 							bw.close();
-							fw.close();
+							fw.close();*/
 	             			   
 
 	             			 
@@ -2005,7 +2134,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 	    		catch(Exception ex){
 	    			System.out.println("exception: "+  ex.getMessage());
 	    		}
-	    	   System.out.println("***********************************************");
+	    	   System.out.println("***********"+itemId+"************"+(++rowNum)+"**************"+new Date()+"**********************");
 	            
 	        }
 	         
@@ -2232,5 +2361,34 @@ public List<Student> fetchstudenthql() throws ParseException {
 	        inputStream.close();
 		
 	}	
+	
+	@RequestMapping(value="/readImg" , method=RequestMethod.POST)
+	public void fetchImg(@RequestBody HashMap<String, String> clasName) throws Exception{
+		
+		String url1= "https://www.booking.com/hotel/fr/mas-saint-remy-de-provence.html";
+		
+		String className =clasName.get("key");
+		
+		Document docu = Jsoup.connect(url1).maxBodySize(0).get();
+		Elements a = docu.getElementsByTag("a");
+	
+		for(Element x: a){
+			
+			if(x.hasClass("hotel_thumbs_sprite")){
+				//System.out.println(x.getElementsByTag("img").get(0).absUrl("src"));
+				
+				if(x.hasAttr("href")  ){
+					System.out.println(x.absUrl("href"));
+				}
+				else {
+					System.out.println(x.getElementsByTag("img").get(0).absUrl("src"));
+				}
+				
+				
+			}
+			
+		}
+		
+	}
 	
 }
