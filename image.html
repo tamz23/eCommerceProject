@@ -17,8 +17,12 @@
 <label>||</label>
 <label id="addrOnFile" ></label>
 
-</div>
+<label id="url"></label>
+<label id="selectURL" style="display: none"></label>
 
+<!-- <input type="text" id="chosenURL" style="width:1000px "  /> -->
+</div>
+	<label id="addressOnSite" style="font-weight: bold;color: chocolate;" ></label>
 <div>
 	<ul id="multiProd">
 	
@@ -26,7 +30,7 @@
 
 </div>
 
-<div>
+<div id="navButtons">
  	
  	<input type="button" value="Prev" onclick="prev()" />
  	
@@ -34,7 +38,7 @@
  	
  	<input type="button" value="SKIP" onclick="ignored()" />
  	
- 	<input type="button" style="margin-left: 100px"  value="FOUND" onclick="saveFoundImage('found')" />
+ 	<input type="button" style="margin-left: 300px"  value="FOUND" onclick="saveFoundImage('found')" />
  	
  	<input type="text" id="extn" />
  	

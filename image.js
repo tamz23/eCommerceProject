@@ -70,6 +70,9 @@ function getImages(foldername){
 			
 			
 			if(response.scenario == "multiProd"){
+				
+				$('#navButtons').hide();
+				
 				$('#folderName').text(foldName);
 				
 				$('#multiProd').empty();
@@ -77,6 +80,9 @@ function getImages(foldername){
 					
 					$('#addrOnFile').text(response.fileAddress);
 					$('#multiProd').append('<li id="'+response.files[i].folderName+'" style="cursor:pointer" onclick="getSubfolderInfo(id)" >'+response.files[i].addressInfo+'</li>');
+					//$('#chosenURL').val(response.chosenUrl); $('#selectURL').text(response.chosenUrl)
+					$('#url').hide();
+					$('#addressOnSite').text('');
 				}
 				$('#images').empty();	
 			}
@@ -89,6 +95,13 @@ function getImages(foldername){
 				$('#folderName').text(foldName);
 				$('#fileName').text(imageCollection[0]);
 				$('#addrOnFile').text(response.fileAddress);
+				$('#chosenURL').val(response.chosenUrl);$('#selectURL').text(response.chosenUrl)
+				$('#addressOnSite').text(response.siteAddress)
+				
+				$('#url').show();
+				$('#url').empty();
+				$('#url').append('<a href="'+response.chosenUrl+'" target="_blank" style="margin-left: 57px" >GoToSite</a>')
+				
 			}
 			else{
 				
@@ -147,6 +160,7 @@ function nextHotel(){
 	CurrentImageCounter = 0;
 	
 	if(CurrentHotelCounter<a.length-1){
+		
 		++CurrentHotelCounter;
 		getImages(a[CurrentHotelCounter]);
 	}
@@ -159,9 +173,10 @@ function nextHotel(){
 
 function ignored(){
 	
+	var selectURL = $('#selectURL').text();
 	
 	$.ajax({
-		url: 'http://localhost:8080/School/student/trackIgnoredItem/'+ foldName +'/'+ ignoredItemCount,
+		url: 'http://localhost:8080/School/student/trackIgnoredItem/'+ foldName +'/'+ ignoredItemCount +"?selURL="+selectURL,
 		method: "POST",
 		contentType: "application/json",
 		//data: JSON.stringify(studentJSON),
@@ -223,9 +238,10 @@ function saveFoundImage(type){
 	var saveName = foldName+"\."+$('#extn').val();
 	alert(saveName);
 	var reason=$('#reasonPartImage').val();
+	var selectURl = $('#selectURL').text(); 
 	
 	$.ajax({
-		url: 'http://localhost:8080/School/student/saveimage/'+ type +'/'+ folName+'/'+selectedImage+"/"+saveName+"/"+saveImageCount+"/"+reason,
+		url: 'http://localhost:8080/School/student/saveimage/'+ type +'/'+ folName+'/'+selectedImage+"/"+saveName+"/"+saveImageCount+"/"+reason+"?selectURL="+selectURl,
 		method: "POST",
 		contentType: "application/json",
 		//data: JSON.stringify(studentJSON),
@@ -253,6 +269,7 @@ function saveFoundImage(type){
 
 function getSubfolderInfo(id){
 
+	$('#navButtons').show();
 	
 	if(id=="main"){
 	
@@ -264,12 +281,21 @@ function getSubfolderInfo(id){
 			//data: JSON.stringify(studentJSON),
 			success : function(response){
 				
-				imageCollection = response;
+				imageCollection = response.files;
 				$('#multiProd').empty();
 				$('#images').empty();
 				$('#images').append('<img alt="" src="../img/output/'+foldName+'/'+imageCollection[0]+'" display="block" ></img>');
 				$('#folderName').text(foldName);
 				$('#fileName').text(imageCollection[0]);
+				
+				
+				$('#addrOnFile').text(response.fileAddress);
+				$('#chosenURL').val(response.chosenUrl);$('#selectURL').text(response.chosenUrl)
+				$('#addressOnSite').text(response.siteAddress)
+				
+				$('#url').show();
+				$('#url').empty();
+				$('#url').append('<a href="'+response.chosenUrl+'" target="_blank" style="margin-left: 57px" >GoToSite</a>')
 				
 				console.log(response);
 			},
@@ -293,12 +319,21 @@ function getSubfolderInfo(id){
 			//data: JSON.stringify(studentJSON),
 			success : function(response){
 				
-				imageCollection = response;
+				imageCollection = response.files;;
 				$('#multiProd').empty();
 				$('#images').empty();
 				$('#images').append('<img alt="" src="../img/output/'+foldName+'/'+imageCollection[0]+'" display="block" ></img>');
 				$('#folderName').text(foldName);
 				$('#fileName').text(imageCollection[0]);
+				
+				$('#addrOnFile').text(response.fileAddress);
+				$('#chosenURL').val(response.chosenUrl);$('#selectURL').text(response.chosenUrl)
+				$('#addressOnSite').text(response.siteAddress)
+				
+				$('#url').show();
+				$('#url').empty();
+				$('#url').append('<a href="'+response.chosenUrl+'" target="_blank" style="margin-left: 57px" >GoToSite</a>')
+				
 				
 				console.log(response);
 			},

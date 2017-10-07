@@ -54,6 +54,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -1329,7 +1330,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 		
 		File file = new File(path+folderName);
         File[] files = file.listFiles();
-        String addressOnFile="";
+        String addressOnFile=""; String chosenUrl="",addressOnSite="";
         
         allImageList.clear();
         
@@ -1370,6 +1371,7 @@ public List<Student> fetchstudenthql() throws ParseException {
 						
 						int cnt=0;
 						while ((line = bufferReader.readLine()) != null) {
+							
 							System.out.println(line);
 							cnt++;
 							if(cnt==1){
@@ -1377,6 +1379,10 @@ public List<Student> fetchstudenthql() throws ParseException {
 							}
 							if(cnt==2){
 								foldInfo.put(fileName, line);
+								addressOnSite = line;
+							}
+							if(cnt==3){
+								chosenUrl = line;
 							}
 							
 						}
@@ -1422,6 +1428,8 @@ public List<Student> fetchstudenthql() throws ParseException {
 			info.put("fileAddress", addressOnFile);
 			info.put("address", addr);
 			info.put("files", fNames);
+			info.put("chosenUrl", chosenUrl);
+			info.put("siteAddress", addressOnSite );
 			return info;
 
 		} else { // WITH Subfolder
@@ -1442,11 +1450,17 @@ public List<Student> fetchstudenthql() throws ParseException {
 						while ((line = bufferReader.readLine()) != null) {
 							System.out.println(line);
 							cnt++;
+							
+							if(cnt==1){
+								addressOnFile = line;
+							}
+							
 							if(cnt ==2){
 								
-								addressOnFile = line;
+								
 								foldInfo.put("folderName", "main");
 								foldInfo.put("addressInfo", line);	
+								addressOnSite = line;
 							}
 							
 						}
@@ -1496,49 +1510,54 @@ public List<Student> fetchstudenthql() throws ParseException {
 					File[] sfiles = sfile.listFiles();
 					
 					for (int j = 0; j < sfiles.length; j++) {
-					
-						HashMap<String,String> foldInfo1 = new HashMap<String, String>();
+
+						HashMap<String, String> foldInfo1 = new HashMap<String, String>();
 						if (sfiles[j].getName().contains("textfile.txt")) {
 
 							String sfileName = sfiles[j].getName();
-							//try {
-
-								FileReader sinputFile = new FileReader(
-										path + folderName + "/" + files[i].getName() + "/" + sfileName);
-								System.out.println(path + folderName + "/" + files[i].getName() + "/" + sfileName);
-								BufferedReader sbufferReader = new BufferedReader(sinputFile);
-								String sline;
-								int cnt=0;
-								while ((sline = sbufferReader.readLine()) != null) {
-									System.out.println(sline);
-									if(cnt==0){
-										addressOnFile = sline;
-									}
-									if(cnt==1){
-										foldInfo1.put("folderName", files[i].getName());
-										foldInfo1.put("addressInfo", sline);	
-									}
-									
-									cnt++;
+							FileReader sinputFile = new FileReader(
+									path + folderName + "/" + files[i].getName() + "/" + sfileName);
+							System.out.println(path + folderName + "/" + files[i].getName() + "/" + sfileName);
+							BufferedReader sbufferReader = new BufferedReader(sinputFile);
+							String sline;
+							int cnt = 0;
+							while ((sline = sbufferReader.readLine()) != null) {
+								System.out.println(sline);
+								if (cnt == 0) {
+									addressOnFile = sline;
 								}
-								sbufferReader.close();
-							/*} catch (Exception e) {
-								System.out.println("Error while reading file line by line:" + e.getMessage());
-							}*/
-								
-								folderInfo.add(foldInfo1);
+								if (cnt == 1) {
+									foldInfo1.put("folderName", files[i].getName());
+									foldInfo1.put("addressInfo", sline);
+								}
+
+								/*if (cnt == 2) {
+									chosenUrl = sline;
+								}*/
+
+								cnt++;
+							}
+							sbufferReader.close();
+							folderInfo.add(foldInfo1);
 						}
-						
+
 					}
 
 				}
 
 			}
 
+			/*info.put("scenario", "multiProd");
+			info.put("fileAddress", addressOnFile);
+			info.put("address", "");
+			info.put("files", folderInfo);
+			info.put("chosenUrl", chosenUrl);*/
+			
 			info.put("scenario", "multiProd");
 			info.put("fileAddress", addressOnFile);
 			info.put("address", "");
 			info.put("files", folderInfo);
+			info.put("chosenUrl", "");
 			return info;
 
 		}
@@ -1548,7 +1567,9 @@ public List<Student> fetchstudenthql() throws ParseException {
 	
 	@RequestMapping(value="/accessImageFromMain/{foldNam}", method=RequestMethod.GET)
 	@ResponseBody
-	public String[] acessImagesfromMainFolder(@PathVariable("foldNam") String folderName) throws IOException{
+	public HashMap<String, Object> acessImagesfromMainFolder(@PathVariable("foldNam") String folderName) throws IOException{
+		
+		String addressOnFile="",chosenUrl="",addressOnSite="";
 		
 		String path = "C:/Users/tamil/Desktop/vithuSampleProj/src/main/webapp/WEB-INF/img/output/";
 
@@ -1565,15 +1586,59 @@ public List<Student> fetchstudenthql() throws ParseException {
 
 			fNames[i] = files[i].getName();
 			
+			if (files[i].getName().contains("textfile.txt")) {
+
+				String fileName = files[i].getName();
+				try {
+
+					FileReader inputFile = new FileReader(path + folderName + "/" + files[i].getName());
+					BufferedReader bufferReader = new BufferedReader(inputFile);
+					String line;
+					int cnt=0;
+					while ((line = bufferReader.readLine()) != null) {
+						System.out.println(line);
+						cnt++;
+						
+						if(cnt==1){
+							addressOnFile = line;
+						}
+						if(cnt==2){
+							//foldInfo.put(fileName, line);
+							
+							addressOnSite = line;
+						}
+						if(cnt==3){
+							chosenUrl = line;
+						}
+						
+					}
+					addr = line;
+					bufferReader.close();
+				} catch (Exception e) {
+					System.out.println("Error while reading file line by line:" + e.getMessage());
+				}
+				
+				//folderInfo.add(foldInfo);
+			}
+			
 		}
 		
-		return fNames;
+		
+		info.put("fileAddress", addressOnFile);
+		info.put("address", "");
+		info.put("files", fNames);
+		info.put("chosenUrl", chosenUrl);
+		info.put("siteAddress", addressOnSite );
+		
+		return info;
 
 	}
 	
 	@RequestMapping(value="/accessIma/{foldNam}/{sub}", method=RequestMethod.GET)
 	@ResponseBody
-	public String[] acessImagesfromSubFolder(@PathVariable("foldNam") String folderName, @PathVariable("sub") String subfoldName) throws IOException{
+	public HashMap<String, Object> acessImagesfromSubFolder(@PathVariable("foldNam") String folderName, @PathVariable("sub") String subfoldName) throws IOException{
+		
+		String addressOnFile="",chosenUrl="",addressOnSite="";
 		
 		String path = "C:/Users/tamil/Desktop/vithuSampleProj/src/main/webapp/WEB-INF/img/output/";
 		
@@ -1594,9 +1659,44 @@ public List<Student> fetchstudenthql() throws ParseException {
 
 			fNames[i] = files[i].getName();
 			
+			try {
+
+				FileReader inputFile = new FileReader(path + folderName + "/" + files[i].getName());
+				BufferedReader bufferReader = new BufferedReader(inputFile);
+				String line;
+				int cnt=0;
+				while ((line = bufferReader.readLine()) != null) {
+					System.out.println(line);
+					cnt++;
+					
+					if(cnt==1){
+						addressOnFile = line;
+					}
+					if(cnt==2){
+						//foldInfo.put(fileName, line);
+						addressOnSite = line;
+					}
+					if(cnt==3){
+						chosenUrl = line;
+					}
+					
+				}
+				addr = line;
+				bufferReader.close();
+			} catch (Exception e) {
+				System.out.println("Error while reading file line by line:" + e.getMessage());
+			}
 		}
+		
+		info.put("fileAddress", addressOnFile);
+		info.put("address", "");
+		info.put("files", fNames);
+		info.put("chosenUrl", chosenUrl);
+		info.put("siteAddress", addressOnSite );
+		
+		return info;
               
-		return fNames;
+		
 	}
 
 	
@@ -1604,7 +1704,8 @@ public List<Student> fetchstudenthql() throws ParseException {
 	@ResponseBody
 	public String saveFoundImage(@PathVariable("Type") String type ,@PathVariable("foName") String foldname,
 									@PathVariable("curImg") String fileNam, @PathVariable("saveImage") String saveImage, 
-									@PathVariable("saveImgCnt") Integer saveImageCount, @PathVariable("reason") String reason	) throws IOException {
+									@PathVariable("saveImgCnt") Integer saveImageCount, @PathVariable("reason") String reason,	
+									@RequestParam("selectURL") String selectURL	) throws IOException {
 		
 		//saveImage = saveImage.replace("$", ".");
 		
@@ -1663,8 +1764,9 @@ public List<Student> fetchstudenthql() throws ParseException {
 			
 		}
 		
-		row.createCell(3).setCellValue(selectedImageURL);
+		row.createCell(4).setCellValue(selectedImageURL);
 		
+		row.createCell(5).setCellValue(selectURL);
 		
 		FileOutputStream fileOut = new FileOutputStream(excelFilePath);
 		workbook.write(fileOut);
@@ -1677,7 +1779,8 @@ public List<Student> fetchstudenthql() throws ParseException {
 
 	@RequestMapping(value="/trackIgnoredItem/{foldName}/{rowCount}", method=RequestMethod.POST)
 	@ResponseBody
-	public String trackIgnoredItem(@PathVariable("foldName") String foldName,@PathVariable("rowCount") Integer rowCount  ) throws Exception{
+	public String trackIgnoredItem(@PathVariable("foldName") String foldName,@PathVariable("rowCount") Integer rowCount,
+									@RequestParam("selURL") String selURL) throws Exception{
 		
 		String excelFilePath = "C:/Vithu Dream/booking.com/Delivery/output.xlsx";
         FileInputStream inputStream = new FileInputStream(new File(excelFilePath));
@@ -1688,6 +1791,7 @@ public List<Student> fetchstudenthql() throws ParseException {
         Row row = sheet.createRow (rowCount);
 		row.createCell(0).setCellValue(foldName);
 		row.createCell(1).setCellValue("ignored");
+		row.createCell(2).setCellValue(selURL);
 		
 		FileOutputStream fileOut = new FileOutputStream(excelFilePath);
 		workbook.write(fileOut);
