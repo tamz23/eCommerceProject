@@ -1,0 +1,65 @@
+<html>
+
+<title>Student</title>
+
+<script src="../js/jquery-1.11.3.min.js"></script>
+<script src="../js/image.js"></script>
+<head>
+</head>
+
+<body>
+
+<div>
+
+<label id="folderName" ></label>
+<label>||</label>
+<label id="fileName" ></label>
+<label>||</label>
+<label id="addrOnFile" ></label>
+
+<label id="url"></label>
+<label id="selectURL" style="display: none"></label>
+
+<!-- <input type="text" id="chosenURL" style="width:1000px "  /> -->
+</div>
+	<label id="addressOnSite" style="font-weight: bold;color: chocolate;" ></label>
+<div>
+	<ul id="multiProd">
+	
+	</ul>
+
+</div>
+
+<div id="navButtons">
+ 	
+ 	<input type="button" value="Prev" onclick="prev()" />
+ 	
+ 	<input type="button" value="next" onclick="next()" />
+ 	
+ 	<input type="button" value="SKIP" onclick="ignored()" />
+ 	
+ 	<input type="button" style="margin-left: 300px"  value="FOUND" onclick="saveFoundImage('found')" />
+ 	
+ 	<input type="text" id="extn" />
+ 	
+ 	<input type="button" value="PartiallyFOUND" onclick="saveFoundImage('partFound')" />
+ 	
+ 	<select name="reasons" id="reasonPartImage">
+ 		<option value="0">select</option>
+ 		<option value="Dark Images">Dark Images</option>
+ 		<option value="Low lighting">Low lighting</option>
+ 		<option value="Blur Image">Blur Image</option>
+ 		<option value="Top Angle">Top Angle</option>
+ </select>
+ 	</div>
+	
+ 	<div id="images">
+ 			
+ 	</div>
+ 	
+ 	
+ 	
+
+</body>
+
+</html>
